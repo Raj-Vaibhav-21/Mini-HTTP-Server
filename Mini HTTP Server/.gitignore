@@ -1,0 +1,12 @@
+# Build artifacts
+server
+*.o
+
+# Xcode noise
+*.xcodeproj/*
+*.xcuserdatad
+DerivedData/
+
+# macOS
+.DS_Store
+
