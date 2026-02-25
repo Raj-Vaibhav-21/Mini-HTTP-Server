@@ -1,3 +1,6 @@
+.vscode/
+server
+.DS_Store
 # Build artifacts
 server
 *.o

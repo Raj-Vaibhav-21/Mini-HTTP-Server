@@ -11,6 +11,7 @@
 #include "request.h"
 #include "response.h"
 #include "router.h"
+#include "thread_pool.h"
 
 using std::cin;
 using std::cout;
@@ -36,16 +37,25 @@ int main() {
     cout << "Server running on port 8080...\n";
 
     int addrlen = sizeof(address);//Initializes addrlen to the size of the address structure
+
+   ThreadPool pool(16);
     while (true) {
-            int client_fd = accept(server_fd, (sockaddr*)&address, (socklen_t*)&addrlen);
+    int client_fd = accept(server_fd, (sockaddr*)&address, (socklen_t*)&addrlen);
 
-            std::string raw = read_request(client_fd);
-            Request req = parse_request_line(raw);
+    if (client_fd < 0) {
+        continue;
+    }
 
-            Response res = handle_route(req);
-            std::string http = build_http_response(res);
+    pool.enqueue([client_fd]() {
 
-            send(client_fd, http.c_str(), http.size(), 0);
-            close(client_fd);
-        }
+        std::string raw = read_request(client_fd);
+        Request req = parse_request_line(raw);
+
+        Response res = handle_route(req);
+        std::string http = build_http_response(res);
+
+        send(client_fd, http.c_str(), http.size(), 0);
+        close(client_fd);
+    });
+}
 }
